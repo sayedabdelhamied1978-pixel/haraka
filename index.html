@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>سجل قسم الحركة</title>
+<meta name="theme-color" content="#0B5D52">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;600;700&display=swap">
+<style>
+:root{
+  --bg:#EDF1F0;--surface:#FFFFFF;--surface-2:#F4F7F6;--ink:#12201E;--muted:#586966;--line:#D3DCDA;
+  --brand:#0B5D52;--on-brand:#FFFFFF;--exp:#B3402F;
+  --c1:#C9810E;--c2:#7B58C9;--c3:#3B6FD4;--c4:#C2547A;
+  --font-display:'Reem Kufi','IBM Plex Sans Arabic',Tahoma,sans-serif;
+  --font-body:'IBM Plex Sans Arabic',Tahoma,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1615;--surface:#16211F;--surface-2:#1B2826;--ink:#E6EFED;--muted:#93A5A1;--line:#2B3B38;
+    --brand:#3CBFA8;--on-brand:#06201B;--exp:#F07B66;
+    --c1:#E8A935;--c2:#A184E6;--c3:#6C95EE;--c4:#E27C9E;color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.6;
+  padding:14px max(16px,env(safe-area-inset-right)) 64px max(16px,env(safe-area-inset-left))}
+#app{max-width:1000px;margin:0 auto}
+h1,h2,h3{font-family:var(--font-display);margin:0;font-weight:600;line-height:1.3}
+p{margin:0}
+button,input,select{font:inherit;color:inherit}
+.muted{color:var(--muted)} .sub{color:var(--muted);font-size:13px}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.eyebrow{font-size:13px;color:var(--muted)}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.top h1{font-size:30px}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 16px;cursor:pointer;font-weight:500;min-height:42px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--brand);color:var(--on-brand);border-color:var(--brand)}
+.btn.danger{color:var(--exp);border-color:var(--exp)}
+.btn.sm{padding:3px 10px;min-height:30px;font-size:13px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+/* home: big buttons */
+.home{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-top:8px solid var(--c);border-radius:14px;padding:22px 20px;display:flex;flex-direction:column;gap:18px;align-items:stretch}
+.card .head{display:flex;align-items:center;gap:14px}
+.card .ic{font-size:46px;line-height:1}
+.card h2{font-size:28px}
+.card .stat{font-size:14px;color:var(--muted)}
+.big{display:block;width:100%;border-radius:12px;border:2px solid var(--c);padding:18px 12px;font-size:20px;font-weight:600;cursor:pointer;text-align:center;font-family:var(--font-display);min-height:64px}
+.big.fill{background:var(--c);color:#fff}
+.big.line{background:transparent;color:var(--ink)}
+.big:hover{filter:brightness(1.07)}
+.big:active{transform:scale(.99)}
+
+/* pages */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.col{display:flex;flex-direction:column;gap:16px}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:8px 14px;flex-wrap:wrap;margin-bottom:12px}
+.ph h2{font-size:19px}
+.pagebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;border-inline-start:8px solid var(--c);padding-inline-start:12px}
+.pagebar h1{font-size:26px}
+.grow{flex:1}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label{font-size:14px;font-weight:500;color:var(--muted)}
+.field small{color:var(--muted);font-size:12px}
+input,select{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:50px;width:100%;font-size:17px}
+.err{color:var(--exp);font-weight:500;min-height:1.5em;margin-top:8px}
+.submit{margin-top:8px;width:100%;max-width:360px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 16px;display:flex;flex-direction:column}
+.kpi.main{border-color:var(--c)}
+.kpi .l{font-size:13px;color:var(--muted)}
+.kpi .v{font-family:var(--font-display);font-size:26px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi .v small{font-size:13px;color:var(--muted);font-family:var(--font-body);font-weight:400}
+.month-ctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.month-ctl select{min-width:150px;min-height:42px;padding:6px 10px;font-size:15px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.tbl{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:14px}
+.tbl th{background:var(--surface-2);color:var(--muted);font-weight:500;font-size:13px;text-align:start;padding:9px 12px;white-space:nowrap}
+.tbl td{padding:9px 12px;border-top:1px solid var(--line);vertical-align:middle}
+.tbl .n{text-align:right;direction:ltr;white-space:nowrap}
+.tbl tfoot td{font-weight:600;background:var(--surface-2)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:16px}
+.empty{padding:26px 12px;text-align:center;color:var(--muted)}
+.banner{background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:10px 14px;font-size:14px;margin-bottom:14px}
+.banner.warn{border-color:var(--c1)}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
+#toast{position:fixed;inset-inline:0;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;justify-content:center;pointer-events:none;z-index:40}
+#toast span{background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:6px;font-weight:500;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+.printhead{display:none}
+@media print{
+  :root:not([data-print]){--bg:#fff;--surface:#fff;--surface-2:#f2f2f2;--ink:#000;--muted:#555;--line:#bbb;color-scheme:light}
+  body{background:#fff!important;padding:0!important}
+  .acts,.month-ctl,.pagebar .btn,#toast,#banners,.noprint{display:none!important}
+  .printhead{display:block!important;margin-bottom:12px;border-bottom:2px solid #0B5D52;padding-bottom:6px}
+  .tbl-wrap{overflow:visible}
+  .panel,.kpi,.tbl tr{break-inside:avoid}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  @page{size:A4;margin:12mm}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="banners"></div>
+  <div id="view"></div>
+</div>
+<div id="toast" aria-live="polite"></div>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<script>
+(function(){
+'use strict';
+var MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+var SEC={
+  diesel:{name:'السولار',icon:'⛽',color:'--c1'},
+  legumes:{name:'البقوليات',icon:'🫘',color:'--c2'},
+  tricycle:{name:'التروسيكل',icon:'🛺',color:'--c3'},
+  rental:{name:'السيارات الإيجار',icon:'🚚',color:'--c4'}
+};
+var SK=['diesel','legumes','tricycle','rental'];
+var LS='alpasha-haraka-entries-v1';
+
+function pad(n){return String(n).padStart(2,'0')}
+function ymd(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+var TODAY=ymd(new Date()),CUR=TODAY.slice(0,7);
+function addMonth(m,n){var p=m.split('-').map(Number);var d=new Date(p[0],p[1]-1+n,1);return d.getFullYear()+'-'+pad(d.getMonth()+1)}
+function monthLabel(m){var p=m.split('-').map(Number);return MONTHS[p[1]-1]+' '+p[0]}
+function shortDay(s){var p=s.split('-').map(Number);return p[2]+' '+MONTHS[p[1]-1]}
+var nf=new Intl.NumberFormat('en-US',{maximumFractionDigits:2});
+function money(n){return nf.format(Math.round((n||0)*100)/100)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function $(s){return document.querySelector(s)}
+function latin(s){return String(s).replace(/[٠-٩]/g,function(d){return d.charCodeAt(0)-1632}).replace(/٫/g,'.').replace(/٬/g,'')}
+function newId(){return 'e'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function secOf(e){return e.sec||'diesel'}
+
+var S={entries:[],view:'home',sec:'diesel',month:CUR,editing:null,confirmDel:null,ready:false,mode:'local',canWrite:true,canDl:false,formDate:TODAY};
+var col=null;
+var sb=null,cloud={cfg:null,user:null,status:'',live:false,ch:null,last:0};
+
+/* storage (same collection as the old app, so previous fuel records still show under "السولار") */
+function loadLocal(){try{var r=localStorage.getItem(LS);return r?JSON.parse(r):[]}catch(e){return []}}
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify(S.entries))}catch(e){toast('تعذّر الحفظ على الجهاز، خذ نسخة احتياطية الآن')}}
+function putEntry(e){
+  if(col)return col.doc(e.id).set(e);
+  var i=S.entries.findIndex(function(x){return x.id===e.id});
+  if(i>=0)S.entries[i]=e;else S.entries.push(e);
+  saveLocal();cloudQueue('put',e.id);return Promise.resolve();
+}
+function delEntry(id){
+  if(col)return col.doc(id).delete();
+  S.entries=S.entries.filter(function(x){return x.id!==id});saveLocal();cloudQueue('del',id);return Promise.resolve();
+}
+
+/* data helpers */
+function fuelAll(){return S.entries.filter(function(e){return e.cat==='fuel'})}
+function secList(sec,m){return fuelAll().filter(function(e){return secOf(e)===sec&&(!m||e.date.slice(0,7)===m)}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:(b.ts||0)-(a.ts||0)})}
+function sum(list,f){return list.reduce(function(a,e){return a+(+e[f]||0)},0)}
+function groupBy(list,f){
+  var mp={};
+  list.forEach(function(e){var k=e[f]||'غير محدد';var g=mp[k]||(mp[k]={name:k,n:0,qty:0,amt:0});g.n++;g.qty+=+e.qty||0;g.amt+=+e.amount||0});
+  return Object.keys(mp).map(function(k){return mp[k]}).sort(function(a,b){return b.amt-a.amt});
+}
+function uniq(f){var s={};fuelAll().forEach(function(e){if(e[f])s[e[f]]=1});return Object.keys(s)}
+
+/* ui helpers */
+var toastT;
+function toast(t){var el=$('#toast');el.innerHTML='<span>'+esc(t)+'</span>';clearTimeout(toastT);toastT=setTimeout(function(){el.innerHTML=''},2600)}
+function csvText(rows){return '\uFEFF'+rows.map(function(r){return r.map(function(c){c=String(c==null?'':c);return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(',')}).join('\r\n')}
+function blobSave(name,data,type){
+  try{
+    var b=new Blob([data],{type:type||'text/plain;charset=utf-8'}),u=URL.createObjectURL(b),a=document.createElement('a');
+    a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(function(){URL.revokeObjectURL(u)},4000);toast('تم تجهيز الملف');
+  }catch(e){toast('تعذّر تصدير الملف')}
+}
+function saveFile(name,data,type){
+  if(!(window.claude&&window.claude.use))return blobSave(name,data,type);
+  window.claude.use('downloads').then(function(dl){
+    if(!dl)return blobSave(name,data,type);
+    return dl.save({filename:name,data:data}).then(function(){toast('تم تجهيز الملف')},function(err){if(err&&err.code==='declined')return;toast('تعذّر تصدير الملف')});
+  },function(){blobSave(name,data,type)});
+}
+function style(sec){return '--c:var('+SEC[sec].color+')'}
+
+/* views */
+function viewHome(){
+  var m=CUR;
+  var cards=SK.map(function(k){
+    var l=secList(k,m);
+    return '<section class="card" style="'+style(k)+'">'+
+      '<div class="head"><span class="ic">'+SEC[k].icon+'</span><div><h2>'+SEC[k].name+'</h2>'+
+      '<p class="stat num">'+(S.ready?(l.length+' حركة · '+money(sum(l,'amount'))+' ج.م هذا الشهر'):'جارٍ التحميل…')+'</p></div></div>'+
+      '<button class="big fill" data-act="entry" data-sec="'+k+'">＋ تسجيل جديد</button>'+
+      '<button class="big line" data-act="report" data-sec="'+k+'">📊 عرض التقارير</button></section>';
+  }).join('');
+  return '<header class="top"><div><p class="eyebrow">شركة الباشا للاستيراد والتصدير والتوزيع</p><h1>سجل قسم الحركة</h1></div></header><div class="home">'+cards+'</div>'+toolsPanel();
+}
+
+function fld(id,label,inner,hint){return '<div class="field"><label for="'+id+'">'+label+'</label>'+inner+(hint?'<small>'+hint+'</small>':'')+'</div>'}
+function inp(id,type,val,extra){return '<input id="'+id+'" name="'+id+'" type="'+type+'" value="'+esc(val==null||val===0?'':val)+'" '+(extra||'')+'>'}
+
+function viewEntry(){
+  var k=S.sec,ed=S.editing;
+  if(!S.canWrite)return back(k,'تسجيل جديد')+'<div class="panel"><div class="empty">التسجيل غير متاح لهذا الحساب (صلاحية اطلاع فقط).</div></div>';
+  var g=function(f){return ed&&ed[f]!=null?ed[f]:''};
+  var recent=secList(k).slice(0,5);
+  return back(k,ed?'تعديل حركة':'تسجيل جديد')+
+  '<section class="panel" style="'+style(k)+'"><form id="entryForm" novalidate><div class="form-grid">'+
+    fld('f_date','التاريخ',inp('f_date','date',ed?ed.date:S.formDate,'required'))+
+    fld('f_driver','اسم السائق',inp('f_driver','text',g('driver'),'list="dlDrv" autocomplete="off" placeholder="اسم السائق"'))+
+    fld('f_item','رقم السيارة',inp('f_item','text',g('item'),'list="dlVeh" autocomplete="off" placeholder="مثال: 1234 أ ب ج"'))+
+    fld('f_qty','كمية الديزل المعبأ (لتر)',inp('f_qty','number',g('qty'),'step="0.01" min="0" inputmode="decimal" placeholder="0"'))+
+    fld('f_amount','قيمة الديزل المعبأ (ج.م)',inp('f_amount','number',g('amount'),'step="0.01" min="0" inputmode="decimal" placeholder="0"'))+
+  '</div><p class="err" id="formErr" role="alert"></p>'+
+  '<button class="btn primary big submit" type="submit" style="--c:var(--brand)">'+(ed?'حفظ التعديل':'تسجيل الحركة')+'</button></form>'+
+  '<datalist id="dlDrv">'+uniq('driver').map(function(x){return '<option value="'+esc(x)+'">'}).join('')+'</datalist>'+
+  '<datalist id="dlVeh">'+uniq('item').map(function(x){return '<option value="'+esc(x)+'">'}).join('')+'</datalist></section>'+
+  '<section class="panel" style="margin-top:16px"><div class="ph"><h2>آخر ما سُجّل في '+SEC[k].name+'</h2><button class="btn sm" data-act="report" data-sec="'+k+'">كل التقارير</button></div>'+
+  (recent.length?tableRows(recent,false):'<p class="muted">لم تُسجَّل حركات بعد.</p>')+'</section>';
+}
+
+function back(k,title){
+  return '<div class="pagebar" style="'+style(k)+'"><button class="btn" data-act="home">← الرئيسية</button><h1>'+SEC[k].icon+' '+SEC[k].name+' — '+title+'</h1></div>';
+}
+
+function tableRows(list,acts){
+  return '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>التاريخ</th><th>السائق</th><th>رقم السيارة</th><th class="n">اللترات</th><th class="n">القيمة</th>'+(acts?'<th class="noprint"></th>':'')+'</tr></thead><tbody>'+
+  list.map(function(e){
+    var a='';
+    if(acts&&S.canWrite)a=S.confirmDel===e.id
+      ?'<td class="noprint"><div class="acts"><button class="btn sm danger" data-act="delOk" data-id="'+e.id+'">تأكيد الحذف</button><button class="btn sm" data-act="delNo">إلغاء</button></div></td>'
+      :'<td class="noprint"><div class="acts"><button class="btn sm" data-act="edit" data-id="'+e.id+'">تعديل</button><button class="btn sm" data-act="del" data-id="'+e.id+'">حذف</button></div></td>';
+    else if(acts)a='<td class="noprint"></td>';
+    return '<tr><td>'+shortDay(e.date)+'</td><td>'+esc(e.driver||'—')+'</td><td>'+esc(e.item||'—')+'</td><td class="n">'+(e.qty?money(e.qty):'—')+'</td><td class="n">'+money(e.amount)+'</td>'+a+'</tr>';
+  }).join('')+'</tbody></table></div>';
+}
+
+function groupTable(gs,label,tq,ta){
+  if(!gs.length)return '<p class="muted">لا توجد بيانات.</p>';
+  return '<div class="tbl-wrap"><table class="tbl"><thead><tr><th>'+label+'</th><th class="n">المرات</th><th class="n">اللترات</th><th class="n">القيمة</th></tr></thead><tbody>'+
+  gs.map(function(g){return '<tr><td>'+esc(g.name)+'</td><td class="n">'+g.n+'</td><td class="n">'+money(g.qty)+'</td><td class="n">'+money(g.amt)+'</td></tr>'}).join('')+
+  '</tbody><tfoot><tr><td>الإجمالي</td><td class="n">'+gs.reduce(function(a,g){return a+g.n},0)+'</td><td class="n">'+money(tq)+'</td><td class="n">'+money(ta)+'</td></tr></tfoot></table></div>';
+}
+
+function monthOptions(){
+  var first=addMonth(CUR,-5);fuelAll().forEach(function(e){var k=e.date.slice(0,7);if(k<first)first=k});
+  if(S.month<first)first=S.month;
+  var out=[];for(var m=first;m<=CUR;m=addMonth(m,1))out.push(m);
+  return out.reverse();
+}
+
+function viewReport(){
+  var k=S.sec,m=S.month,list=secList(k,m),tq=sum(list,'qty'),ta=sum(list,'amount');
+  var avg=tq>0?ta/tq:0;
+  return '<div class="printhead"><p class="eyebrow">شركة الباشا للاستيراد والتصدير والتوزيع — قسم الحركة</p><h2>تقرير '+SEC[k].name+' — '+monthLabel(m)+'</h2><p class="sub">تاريخ الطباعة: '+TODAY+'</p></div>'+back(k,'التقارير')+
+  '<section class="panel" style="'+style(k)+'"><div class="ph"><div class="month-ctl"><button class="btn" data-act="prevMonth">الشهر السابق</button>'+
+  '<select id="monthSel" aria-label="الشهر">'+monthOptions().map(function(x){return '<option value="'+x+'"'+(x===m?' selected':'')+'>'+monthLabel(x)+'</option>'}).join('')+'</select>'+
+  '<button class="btn" data-act="nextMonth"'+(m>=CUR?' disabled':'')+'>الشهر التالي</button></div>'+
+  '<div class="acts">'+(S.canWrite?'<button class="btn primary" data-act="entry" data-sec="'+k+'">＋ تسجيل جديد</button>':'')+'<button class="btn" data-act="print">🖨 طباعة</button><button class="btn" data-act="xls">تصدير Excel</button><button class="btn" data-act="csv">تصدير CSV</button>'+'</div></div>'+
+  '<div class="kpis"><div class="kpi main"><span class="l">إجمالي قيمة الديزل</span><span class="v">'+money(ta)+' <small>ج.م</small></span></div>'+
+  '<div class="kpi"><span class="l">إجمالي اللترات</span><span class="v">'+money(tq)+' <small>لتر</small></span></div>'+
+  '<div class="kpi"><span class="l">عدد التعبئات</span><span class="v">'+list.length+'</span></div>'+
+  '<div class="kpi"><span class="l">متوسط سعر اللتر</span><span class="v">'+(avg?money(avg):'—')+' <small>ج.م</small></span></div></div></section>'+
+  (list.length?
+  '<div class="two" style="margin-top:16px"><section class="panel"><div class="ph"><h2>حسب السيارة</h2></div>'+groupTable(groupBy(list,'item'),'رقم السيارة',tq,ta)+'</section>'+
+  '<section class="panel"><div class="ph"><h2>حسب السائق</h2></div>'+groupTable(groupBy(list,'driver'),'السائق',tq,ta)+'</section></div>'+
+  '<section class="panel" style="margin-top:16px"><div class="ph"><h2>سجل الحركات — '+monthLabel(m)+'</h2></div>'+tableRows(list,true)+'</section>'
+  :'<div class="panel" style="margin-top:16px"><div class="empty">لا توجد حركات في '+monthLabel(m)+'.</div></div>');
+}
+
+function banners(){
+  var b='';
+  if(S.mode==='local'&&S.entries.length&&daysSinceBackup()>=7&&!cloud.user)b+='<div class="banner warn">'+(isFinite(daysSinceBackup())?'مضى '+daysSinceBackup()+' يوم على آخر نسخة احتياطية.':'لم تُؤخذ نسخة احتياطية بعد.')+' البيانات محفوظة على هذا الجهاز فقط، يُنصح بأخذ نسخة من الصفحة الرئيسية.</div>';
+  if(sb&&cloud.cfg&&!cloud.user)b+='<div class="banner warn">المزامنة بين الأجهزة غير مفعّلة على هذا الجهاز. <button class="btn sm" data-act="sync">تسجيل الدخول</button></div>';
+  if(cloud.user&&cloud.status==='err')b+='<div class="banner warn">تعذّرت المزامنة مع الخادم، ستُعاد المحاولة تلقائيًا. بياناتك محفوظة على الجهاز.</div>';
+  if(S.mode==='shared'&&!S.canWrite)b+='<div class="banner">لديك صلاحية الاطلاع فقط.</div>';
+  return b;
+}
+function render(){
+  $('#banners').innerHTML=banners();
+  var v=S.view==='entry'?viewEntry():S.view==='report'?viewReport():S.view==='sync'?viewSync():viewHome();
+  $('#view').innerHTML=v;
+}
+function go(v,sec){S.view=v;if(sec)S.sec=sec;S.confirmDel=null;render();window.scrollTo(0,0)}
+
+/* export / print / backup */
+function reportRows(){
+  var rows=[['التاريخ','القسم','السائق','رقم السيارة','اللترات','القيمة']];
+  secList(S.sec,S.month).slice().reverse().forEach(function(e){rows.push([e.date,SEC[S.sec].name,e.driver||'',e.item||'',e.qty||'',e.amount])});
+  return rows;
+}
+function xlsHtml(){
+  var rows=reportRows(),k=S.sec,l=secList(k,S.month);
+  var h='<html dir="rtl"><head><meta charset="utf-8"></head><body><table border="1"><tr><th colspan="6">'+esc('سجل قسم الحركة — '+SEC[k].name+' — '+monthLabel(S.month))+'</th></tr>';
+  rows.forEach(function(r,i){var t=i===0?'th':'td';h+='<tr>'+r.map(function(c){return '<'+t+'>'+esc(c)+'</'+t+'>'}).join('')+'</tr>'});
+  h+='<tr><th colspan="4">الإجمالي</th><th>'+sum(l,'qty')+'</th><th>'+sum(l,'amount')+'</th></tr></table></body></html>';
+  return '\uFEFF'+h;
+}
+function doPrint(){
+  if(window.claude&&window.claude.use){
+    var css=document.querySelector('style').textContent;
+    var html='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير</title><style>'+css+'</style></head><body><div id="app"><div id="view">'+$('#view').innerHTML+'</div></div><script>window.onload=function(){setTimeout(function(){window.print()},400)}<\/script></body></html>';
+    saveFile('تقرير-'+SEC[S.sec].name+'-'+S.month+'.html',html,'text/html;charset=utf-8');return;
+  }
+  try{window.print()}catch(e){toast('تعذّرت الطباعة')}
+}
+function lastBackup(){try{return localStorage.getItem('alpasha-last-backup')||''}catch(e){return ''}}
+function daysSinceBackup(){var d=lastBackup();if(!d)return Infinity;return Math.floor((new Date(TODAY)-new Date(d))/864e5)}
+function doBackup(){
+  saveFile('نسخة-احتياطية-الحركة-'+TODAY+'.json',JSON.stringify({app:'alpasha-haraka',v:1,exported:new Date().toISOString(),entries:S.entries}),'application/json');
+  try{localStorage.setItem('alpasha-last-backup',TODAY)}catch(e){}
+  setTimeout(render,50);
+}
+function doRestore(file){
+  var fr=new FileReader();
+  fr.onload=function(){
+    try{
+      var j=JSON.parse(fr.result),list=Array.isArray(j)?j:j.entries;
+      if(!Array.isArray(list))throw 0;
+      var have={};S.entries.forEach(function(e){have[e.id]=1});
+      var add=list.filter(function(e){return e&&e.id&&e.date&&!have[e.id]});
+      if(!add.length){toast('لا توجد حركات جديدة في الملف');return}
+      var done=function(){toast('تمت استعادة '+add.length+' حركة');render()};
+      if(col)Promise.all(add.map(putEntry)).then(done,function(){toast('تعذّرت الاستعادة')});
+      else{add.forEach(function(e){S.entries.push(e);cloudQueue('put',e.id)});saveLocal();done()}
+    }catch(e){toast('الملف غير صالح')}
+  };
+  fr.readAsText(file);
+}
+function doInstall(){
+  if(!S.installEv)return;
+  S.installEv.prompt();S.installEv=null;render();
+}
+function toolsPanel(){
+  var lb=lastBackup();
+  var note=cloud.user?'🟢 المزامنة مفعّلة: الحركات مشتركة بين كل الأجهزة لحظيًا.':S.mode==='shared'?'الحركات محفوظة في التخزين المشترك.':'تُحفظ كل حركة تلقائيًا في ذاكرة هذا الجهاز فور تسجيلها. '+(lb?'آخر نسخة احتياطية: '+lb+'.':'لم تُؤخذ نسخة احتياطية بعد.');
+  return '<section class="panel noprint" style="margin-top:18px"><div class="ph"><h2>حفظ البيانات والتطبيق</h2></div><p class="sub" style="margin-bottom:10px">'+note+'</p><div class="acts">'+
+    (!col?'<button class="btn'+(cloud.user?'':' primary')+'" data-act="sync">🔄 المزامنة بين الأجهزة</button>':'')+
+    '<button class="btn" data-act="backup">⬇ نسخة احتياطية (JSON)</button>'+
+    '<label class="btn" for="restoreFile" style="cursor:pointer;display:inline-flex;align-items:center">⬆ استعادة نسخة</label><input id="restoreFile" type="file" accept=".json,application/json" hidden>'+
+    (S.installEv?'<button class="btn primary" data-act="install">📲 تثبيت التطبيق</button>':'')+'</div></section>';
+}
+function standalone(){
+  try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+  try{if('serviceWorker' in navigator&&location.protocol!=='file:')navigator.serviceWorker.register('sw.js')}catch(e){}
+}
+
+/* cloud sync (Supabase): local copy always kept; changes are queued and pushed, remote changes arrive live */
+var CFG_KEY='alpasha-sb-cfg',Q_KEY='alpasha-sb-queue';
+function softRender(){var ae=document.activeElement;if(ae&&(ae.tagName==='INPUT'||ae.tagName==='SELECT'))return;render()}
+function cfg(){
+  var c=window.HARAKA_CFG||{};
+  if(c.url&&c.key)return {url:c.url,key:c.key};
+  try{var s=JSON.parse(localStorage.getItem(CFG_KEY)||'null');if(s&&s.url&&s.key)return s}catch(e){}
+  return null;
+}
+function getQ(){try{return JSON.parse(localStorage.getItem(Q_KEY)||'{}')}catch(e){return {}}}
+function setQ(q){try{localStorage.setItem(Q_KEY,JSON.stringify(q))}catch(e){}}
+function cloudQueue(op,id){
+  if(!cloud.cfg)return;
+  var q=getQ();q[id]=op;setQ(q);flushQ();
+}
+var flushing=false;
+function flushQ(){
+  if(!sb||!cloud.user||flushing||!navigator.onLine)return Promise.resolve();
+  var q=getQ(),ids=Object.keys(q);if(!ids.length)return Promise.resolve();
+  flushing=true;
+  var puts=ids.filter(function(i){return q[i]==='put'}),dels=ids.filter(function(i){return q[i]==='del'});
+  var rows=puts.map(function(id){return S.entries.find(function(e){return e.id===id})}).filter(Boolean).map(function(e){return {id:e.id,data:e,entry_date:e.date,updated_at:new Date().toISOString()}});
+  var jobs=[],i;
+  for(i=0;i<rows.length;i+=500)jobs.push(sb.from('haraka_entries').upsert(rows.slice(i,i+500)).then(function(r){if(r.error)throw r.error}));
+  for(i=0;i<dels.length;i+=200)jobs.push(sb.from('haraka_entries').delete().in('id',dels.slice(i,i+200)).then(function(r){if(r.error)throw r.error}));
+  return Promise.all(jobs).then(function(){
+    var q2=getQ();ids.forEach(function(k){if(q2[k]===q[k])delete q2[k]});setQ(q2);cloud.status='ok';
+  },function(){cloud.status='err'}).then(function(){flushing=false;softRender()});
+}
+function cloudPull(){
+  var all=[],from=0;
+  function page(){
+    return sb.from('haraka_entries').select('id,data').order('id').range(from,from+999).then(function(r){
+      if(r.error)throw r.error;
+      all=all.concat(r.data);
+      if(r.data.length===1000){from+=1000;return page()}
+      return all;
+    });
+  }
+  return page();
+}
+function cloudSync(){
+  return cloudPull().then(function(rows){
+    var remote={},q=getQ(),changed=false,idx={};
+    S.entries.forEach(function(e,i){idx[e.id]=i});
+    rows.forEach(function(r){
+      remote[r.id]=1;
+      if(q[r.id]||!r.data)return;
+      var i=idx[r.id];
+      if(i==null){idx[r.id]=S.entries.length;S.entries.push(r.data);changed=true}
+      else if((r.data.ts||0)>(S.entries[i].ts||0)){S.entries[i]=r.data;changed=true}
+    });
+    S.entries.forEach(function(e){if(e.cat==='fuel'&&!remote[e.id]&&!q[e.id])q[e.id]='put'});
+    setQ(q);if(changed)saveLocal();
+    cloud.last=Date.now();cloud.status='ok';
+    return flushQ();
+  });
+}
+function cloudSubscribe(){
+  if(cloud.ch)return;
+  cloud.ch=sb.channel('haraka-live').on('postgres_changes',{event:'*',schema:'public',table:'haraka_entries'},function(p){
+    if(p.eventType==='DELETE'){
+      var id=p.old&&p.old.id;
+      if(id){S.entries=S.entries.filter(function(e){return e.id!==id});saveLocal();softRender()}
+      return;
+    }
+    var r=p.new;if(!r||!r.data||getQ()[r.id])return;
+    var i=S.entries.findIndex(function(e){return e.id===r.id});
+    if(i<0)S.entries.push(r.data);else S.entries[i]=r.data;
+    saveLocal();softRender();
+  }).subscribe(function(st){cloud.live=(st==='SUBSCRIBED');softRender()});
+}
+function onLogin(user){
+  cloud.user=user;
+  cloudSync().then(function(){cloudSubscribe()},function(){cloud.status='err'}).then(softRender);
+}
+function cloudInit(){
+  cloud.cfg=cfg();
+  if(!cloud.cfg)return;
+  if(!window.supabase){cloud.status='nolib';return}
+  sb=window.supabase.createClient(cloud.cfg.url,cloud.cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
+  sb.auth.getSession().then(function(r){
+    if(r.data&&r.data.session)onLogin(r.data.session.user);else softRender();
+  });
+  sb.auth.onAuthStateChange(function(ev){if(ev==='SIGNED_OUT'){cloud.user=null;cloud.live=false;softRender()}});
+}
+function cloudLogin(email,pw){
+  if(!sb)return;
+  sb.auth.signInWithPassword({email:email,password:pw}).then(function(r){
+    if(r.error||!r.data||!r.data.user){toast('بيانات الدخول غير صحيحة');return}
+    onLogin(r.data.user);toast('تم تسجيل الدخول');go('home');
+  },function(){toast('تعذّر الاتصال بالخادم')});
+}
+function cloudLogout(){
+  sb.auth.signOut().then(function(){
+    if(cloud.ch){sb.removeChannel(cloud.ch);cloud.ch=null}
+    cloud.user=null;cloud.live=false;render();
+  });
+}
+function viewSync(){
+  var c=cloud.cfg,h='<div class="pagebar" style="--c:var(--brand)"><button class="btn" data-act="home">← الرئيسية</button><h1>🔄 المزامنة بين الأجهزة</h1></div><section class="panel">';
+  if(!c){
+    h+='<p class="sub" style="margin-bottom:12px">أدخل بيانات مشروع Supabase مرة واحدة على هذا الجهاز (Project URL و anon public key من Project Settings ← API).</p><div class="form-grid">'+
+      fld('sbUrl','Project URL','<input id="sbUrl" type="url" dir="ltr" placeholder="https://xxxx.supabase.co" autocomplete="off">')+
+      fld('sbKey','anon public key','<input id="sbKey" type="text" dir="ltr" autocomplete="off">')+'</div>'+
+      '<div class="acts" style="margin-top:14px"><button class="btn primary" data-act="saveCfg">حفظ وتفعيل</button></div>';
+  }else if(!sb){
+    h+='<p class="err">تعذّر تحميل مكتبة المزامنة. تأكد من الإنترنت ثم أعد فتح التطبيق.</p>';
+  }else if(!cloud.user){
+    h+='<form id="loginForm"><div class="form-grid">'+
+      fld('lg_em','البريد الإلكتروني','<input id="lg_em" name="em" type="email" dir="ltr" autocomplete="username">')+
+      fld('lg_pw','كلمة المرور','<input id="lg_pw" name="pw" type="password" dir="ltr" autocomplete="current-password">')+
+      '</div><div class="acts" style="margin-top:14px"><button class="btn primary" type="submit">تسجيل الدخول</button></div></form>';
+  }else{
+    var pend=Object.keys(getQ()).length;
+    h+='<p>🟢 متصل كـ <b dir="ltr">'+esc(cloud.user.email||'')+'</b></p><p class="sub" style="margin:8px 0 14px">'+
+      (cloud.live?'التحديث اللحظي يعمل.':'جارٍ الاتصال بالتحديث اللحظي…')+(pend?' · '+pend+' تغيير بانتظار الرفع.':'')+' · '+fuelAll().length+' حركة.</p>'+
+      '<div class="acts"><button class="btn" data-act="syncNow">مزامنة الآن</button><button class="btn danger" data-act="logout">تسجيل الخروج</button></div>';
+  }
+  if(c&&!(window.HARAKA_CFG&&window.HARAKA_CFG.url))h+='<div class="acts" style="margin-top:18px"><button class="btn sm" data-act="clearCfg">تغيير بيانات المشروع</button></div>';
+  return h+'</section>';
+}
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&sb&&cloud.user&&Date.now()-cloud.last>60000)cloudSync().then(softRender,function(){})});
+window.addEventListener('online',function(){if(sb&&cloud.user){flushQ();cloudSync().then(softRender,function(){})}});
+
+/* events */
+document.addEventListener('click',function(ev){
+  var b=ev.target.closest&&ev.target.closest('[data-act]');if(!b)return;
+  var a=b.dataset.act,d=b.dataset;
+  switch(a){
+    case 'home':S.editing=null;go('home');break;
+    case 'entry':S.editing=null;go('entry',d.sec);break;
+    case 'report':S.editing=null;go('report',d.sec);break;
+    case 'prevMonth':S.month=addMonth(S.month,-1);render();break;
+    case 'nextMonth':if(S.month<CUR){S.month=addMonth(S.month,1);render()}break;
+    case 'edit':{var e=S.entries.find(function(x){return x.id===d.id});if(e){S.editing=e;go('entry',secOf(e))}break}
+    case 'del':S.confirmDel=d.id;render();break;
+    case 'delNo':S.confirmDel=null;render();break;
+    case 'delOk':S.confirmDel=null;delEntry(d.id).then(function(){toast('تم حذف الحركة');if(!col)render()},function(){toast('تعذّر الحذف')});break;
+    case 'csv':saveFile('حركة-'+SEC[S.sec].name+'-'+S.month+'.csv',csvText(reportRows()),'text/csv;charset=utf-8');break;
+    case 'xls':saveFile('حركة-'+SEC[S.sec].name+'-'+S.month+'.xls',xlsHtml(),'application/vnd.ms-excel;charset=utf-8');break;
+    case 'print':doPrint();break;
+    case 'backup':doBackup();break;
+    case 'install':doInstall();break;
+    case 'sync':go('sync');break;
+    case 'saveCfg':{var u=($('#sbUrl').value||'').trim().replace(/\/+$/,''),k=($('#sbKey').value||'').trim();if(!/^https:\/\//.test(u)||k.length<20){toast('تأكد من الرابط والمفتاح');break}try{localStorage.setItem(CFG_KEY,JSON.stringify({url:u,key:k}))}catch(e){}location.reload();break}
+    case 'clearCfg':try{localStorage.removeItem(CFG_KEY)}catch(e){}location.reload();break;
+    case 'syncNow':if(sb&&cloud.user){cloudSync().then(function(){toast('تمت المزامنة');softRender()},function(){toast('تعذّرت المزامنة')})}break;
+    case 'logout':cloudLogout();break;
+  }
+});
+document.addEventListener('change',function(ev){
+  var t=ev.target;
+  if(t.id==='monthSel'){S.month=t.value;render()}
+  else if(t.id==='f_date'){S.formDate=t.value}
+  else if(t.id==='restoreFile'){if(t.files&&t.files[0])doRestore(t.files[0]);t.value=''}
+});
+document.addEventListener('submit',function(ev){
+  if(ev.target.id==='loginForm'){ev.preventDefault();var lf=new FormData(ev.target);cloudLogin((lf.get('em')||'').toString().trim(),(lf.get('pw')||'').toString());return}
+  if(ev.target.id!=='entryForm')return;
+  ev.preventDefault();
+  var fd=new FormData(ev.target),old=S.editing;
+  var g=function(n){return (fd.get(n)||'').toString().trim()};
+  var num=function(n){var x=parseFloat(latin(g(n)));return isNaN(x)?0:x};
+  var err=function(t){$('#formErr').textContent=t};
+  var qty=num('f_qty'),amount=Math.round(num('f_amount')*100)/100;
+  if(!g('f_date'))return err('اختر التاريخ.');
+  if(!g('f_driver'))return err('اكتب اسم السائق.');
+  if(!g('f_item'))return err('اكتب رقم السيارة.');
+  if(!(qty>0))return err('اكتب كمية الديزل المعبأ.');
+  if(!(amount>0))return err('اكتب قيمة الديزل المعبأ.');
+  var e=Object.assign({},old||{},{
+    id:old?old.id:newId(),date:g('f_date'),cat:'fuel',kind:'exp',sec:S.sec,amount:amount,item:g('f_item'),
+    type:'سولار',driver:g('f_driver'),qty:qty,price:Math.round(amount/qty*100)/100,ts:Date.now()
+  });
+  S.formDate=e.date;err('');
+  var wasEdit=!!old;S.editing=null;
+  putEntry(e).then(function(){
+    toast(wasEdit?'تم حفظ التعديل':'تم تسجيل الحركة');
+    if(wasEdit){S.month=e.date.slice(0,7);go('report',S.sec)}
+    else{render();var f=$('#f_driver');if(f)f.focus()}
+  },function(){toast('تعذّر الحفظ، حاول مرة أخرى')});
+});
+
+/* boot */
+function boot(){
+  render();
+  var C=window.claude;
+  if(!C||!C.use){S.entries=loadLocal();S.ready=true;render();standalone();cloudInit();return}
+  Promise.all([C.use('db').catch(function(){return null}),C.use('user').catch(function(){return null}),C.use('downloads').catch(function(){return null})]).then(function(r){
+    var db=r[0],user=r[1];S.canDl=!!r[2];
+    var start=function(){
+      if(!db){S.entries=loadLocal();S.ready=true;render();return}
+      col=db.collection('entries');S.mode='shared';
+      col.onSnapshot(function(snap){
+        S.entries=snap.docs.map(function(d){return d.data()}).filter(Boolean).map(function(e){e.amount=+e.amount||0;e.date=String(e.date||TODAY);return e});
+        S.ready=true;
+        var ae=document.activeElement;
+        if(ae&&(ae.tagName==='INPUT'||ae.tagName==='SELECT'))return; /* don't wipe a form being typed in */
+        render();
+      },function(){S.ready=true;render()});
+    };
+    if(db&&user&&user.can){Promise.resolve(user.can('data.write')).then(function(w){if(w===false)S.canWrite=false},function(){}).then(start)}
+    else start();
+  });
+}
+window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();S.installEv=e;if(S.view==='home')render()});
+window.addEventListener('appinstalled',function(){S.installEv=null;toast('تم تثبيت التطبيق');if(S.view==='home')render()});
+boot();
+})();
+</script>
+</body>
+</html>
