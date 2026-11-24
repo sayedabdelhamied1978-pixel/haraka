@@ -95,6 +95,15 @@ input,select{background:var(--surface);border:1px solid var(--line);border-radiu
 .acts{display:flex;gap:6px;flex-wrap:wrap}
 #toast{position:fixed;inset-inline:0;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;justify-content:center;pointer-events:none;z-index:40}
 #toast span{background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:6px;font-weight:500;box-shadow:0 4px 18px rgba(0,0,0,.25)}
+.chart{width:100%;height:auto;direction:ltr;display:block}
+.chart .bar{fill:var(--c)}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart text{fill:var(--muted);font-size:13px;font-family:var(--font-body)}
+.hb{display:grid;grid-template-columns:minmax(70px,130px) 1fr auto;gap:10px;align-items:center;margin:8px 0;font-size:14px}
+.hb .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hb .tr{background:var(--surface-2);border-radius:4px;overflow:hidden;height:16px}
+.hb .fl{height:16px;background:var(--c);border-radius:4px}
+.hb .vl{font-variant-numeric:tabular-nums;direction:ltr;font-weight:500}
 .printhead{display:none}
 @media print{
   :root:not([data-print]){--bg:#fff;--surface:#fff;--surface-2:#f2f2f2;--ink:#000;--muted:#555;--line:#bbb;color-scheme:light}
@@ -334,6 +343,54 @@ function monthOptions(){
   return out.reverse();
 }
 
+/* ====== رسوم بيانية بسيطة للتقارير (SVG بدون مكتبات) ====== */
+function metricOf(sec){var x=SEC[sec].kpis[0];return {k:x.k,label:x.label,unit:x.unit||''}}
+function niceMax(v){
+  if(!(v>0))return 1;
+  var ex=Math.pow(10,Math.floor(Math.log(v)/Math.LN10)),f=v/ex;
+  return (f<=1?1:f<=2?2:f<=5?5:10)*ex;
+}
+function barChart(vals,labels,titles,hl,unit,aria){
+  var W=600,H=240,L=58,R=10,T=14,B=30,iw=W-L-R,ih=H-T-B,n=vals.length,slot=iw/n,bw=Math.min(slot*0.72,48);
+  var max=niceMax(Math.max.apply(null,vals)),i,o='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(aria)+'">';
+  [0,0.5,1].forEach(function(f){
+    var y=T+ih-f*ih;
+    o+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'"/><text x="'+(L-6)+'" y="'+(y+4)+'" text-anchor="end">'+money(max*f)+'</text>';
+  });
+  for(i=0;i<n;i++){
+    var h=vals[i]/max*ih,x=L+i*slot+(slot-bw)/2,y2=T+ih-h;
+    o+='<rect class="bar" x="'+x.toFixed(1)+'" y="'+y2.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(h,0).toFixed(1)+'" rx="2"'+(hl>=0&&i!==hl?' opacity=".5"':'')+'><title>'+esc(titles[i]+' — '+money(vals[i])+(unit?' '+unit:''))+'</title></rect>';
+    var lb=labels[i];
+    if(lb)o+='<text x="'+(L+i*slot+slot/2).toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle">'+esc(lb)+'</text>';
+  }
+  return o+'</svg>';
+}
+function hbars(gs,mk,unit){
+  gs=gs.filter(function(g){return (g.s[mk]||0)>0}).slice(0,8);
+  if(!gs.length)return '<p class="muted">لا توجد بيانات.</p>';
+  var mx=gs[0].s[mk];
+  return gs.map(function(g){
+    return '<div class="hb"><span class="nm" title="'+esc(g.name)+'">'+esc(g.name)+'</span><span class="tr"><span class="fl" style="display:block;width:'+Math.max(2,Math.round(g.s[mk]/mx*100))+'%"></span></span><span class="vl">'+money(g.s[mk])+(unit?' '+unit:'')+'</span></div>';
+  }).join('');
+}
+function chartsHtml(sec,m,list){
+  var sc=SEC[sec],mt=metricOf(sec),p=m.split('-').map(Number),days=new Date(p[0],p[1],0).getDate(),dv=[],dl=[],i;
+  for(i=1;i<=days;i++){dv.push(0);dl.push((i===1||i%5===0)?String(i):'')}
+  list.forEach(function(e){var d=+e.date.slice(8,10);if(d>=1&&d<=days)dv[d-1]+=(+e[mt.k]||0)});
+  var dayTitles=dv.map(function(x,j){return 'يوم '+(j+1)});
+  var mv=[],ml=[],mm;
+  for(i=5;i>=0;i--){mm=addMonth(m,-i);mv.push(sum(secList(sec,mm),mt.k));ml.push(MONTHS[+mm.slice(5,7)-1])}
+  var h='<div style="'+style(sec)+'">'+
+    '<section class="panel" style="margin-top:16px"><div class="ph"><h2>'+mt.label+' يوميًا — '+monthLabel(m)+'</h2><span class="sub">'+(mt.unit||'')+'</span></div>'+
+    barChart(dv,dl,dayTitles,-1,mt.unit,mt.label+' يوميًا')+'</section>'+
+    '<div class="two" style="margin-top:16px"><section class="panel"><div class="ph"><h2>آخر 6 شهور</h2><span class="sub">'+(mt.unit||'')+'</span></div>'+
+    barChart(mv,ml,ml,5,mt.unit,mt.label+' آخر ستة شهور')+'</section>';
+  sc.groups.forEach(function(g){
+    h+='<section class="panel"><div class="ph"><h2>الأعلى '+g.title+'</h2><span class="sub">'+mt.label+'</span></div>'+hbars(groupBy(list,g.by,[{k:mt.k}]),mt.k,mt.unit)+'</section>';
+  });
+  return h+'</div></div>';
+}
+
 function kpiHtml(sec,list){
   var out=SEC[sec].kpis.map(function(x){
     var v;
@@ -360,7 +417,7 @@ function viewReport(){
   '<div class="acts">'+(S.canWrite?'<button class="btn primary" data-act="entry" data-sec="'+k+'">＋ تسجيل جديد</button>':'')+impBtns()+'<button class="btn" data-act="print">🖨 طباعة</button><button class="btn" data-act="xls">تصدير Excel</button><button class="btn" data-act="csv">تصدير CSV</button>'+'</div></div>'+
   '<div class="kpis">'+kpiHtml(k,list)+'</div></section>'+
   (list.length?
-  groupsHtml+
+  chartsHtml(k,m,list)+groupsHtml+
   '<section class="panel" style="margin-top:16px"><div class="ph"><h2>سجل الحركات — '+monthLabel(m)+'</h2></div>'+tableRows(list,true,k)+'</section>'
   :'<div class="panel" style="margin-top:16px"><div class="empty">لا توجد حركات في '+monthLabel(m)+'.</div></div>');
 }
